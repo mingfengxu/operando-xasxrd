@@ -1,0 +1,7 @@
+data/
+results/
+results_private/
+*.egg-info/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
