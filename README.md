@@ -54,6 +54,9 @@ Only the **constant-current part of the first charge** is fitted by default. LNM
 at 4.5 V for 40 min, and one scan per cell fell into that hold. Including it moves the Ni-edge
 and *a* breaks by ≤ 0.004. It changes only LNM-2 *c* (0.34 → 0.41), because *c* drops sharply
 (11.23 → 11.06 Å) during the hold, the onset of interlayer collapse at 4.5 V.
+NM was not held at 4.5 V. Its last charge scan (4.42 V, on the final voltage rise) is dropped
+(`drop_last_charge` in `CELLS`, override with `--keep-all`), so every cell ends at the last scan
+before the top of charge. This moves the NM E½ break from 0.35 to 0.37 and narrows its interval.
 
 Compositions (Rietveld, SI Table S11) set the absolute x in the aligned tables; plots use Δx.
 
@@ -68,7 +71,7 @@ Compositions (Rietveld, SI Table S11) set the absolute x in the aligned tables; 
 
 | cell | Ni E½ | V | Ni white line | *a* | *c* | Ni E½ slope after/before |
 |---|---|---|---|---|---|---|
-| NM    | 0.35 (0.28–0.41) | 3.95 | 0.24 (0.22–0.27) | 0.31 (0.29–0.34) | 0.27 (0.26–0.28) | 0.35 |
+| NM    | 0.37 (0.34–0.40) | 4.09 | 0.24 (0.22–0.28) | 0.31 (0.29–0.34) | 0.27 (0.26–0.28) | 0.17 |
 | LNM-2 | 0.37 (0.34–0.39) | 4.09 | 0.24 (0.20–0.29) | 0.28 (0.25–0.30) | 0.34 (0.32–0.36) | 0.33 |
 | LNM-3 | 0.29 (0.27–0.31) | 4.24 | 0.25 (0.23–0.27) | 0.24 (0.21–0.26) | 0.25 (0.24–0.27) | 0.07 |
 | LNM-4 | 0.17 (0.16–0.17) | 3.62 | 0.15 (0.14–0.16) | 0.15 (0.14–0.16) | 0.16 (0.15–0.17) | 0.01 |
@@ -80,7 +83,7 @@ Compositions (Rietveld, SI Table S11) set the absolute x in the aligned tables; 
   same Δx where *a* stops contracting. About 0.2–0.3 more Na per formula unit is then extracted
   without further Ni oxidation, which points to oxygen redox. Two independent probes, XAS and
   XRD, agree within their bootstrap intervals.
-* In **NM and LNM-2** the edge keeps shifting after the break (about a third of the initial
+* In **NM and LNM-2** the edge keeps shifting after the break (17 % and 33 % of the initial
   rate). In NM the frozen *a*/*c* reflect the two-phase P2–O2 region (only the P2 phase is
   refined), not the end of Ni redox.
 
@@ -91,7 +94,7 @@ same Δx axis:
 
 | cell | SI threshold rule | hinge, white line | hinge, E½ |
 |---|---|---|---|
-| NM    | 0.38 | 0.24 | 0.35 |
+| NM    | 0.38 | 0.24 | 0.37 |
 | LNM-2 | 0.52 | 0.24 | 0.37 |
 | LNM-3 | 0.37 | 0.25 | 0.29 |
 | LNM-4 | 0.24 | 0.15 | 0.17 |

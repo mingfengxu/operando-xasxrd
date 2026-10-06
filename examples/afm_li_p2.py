@@ -25,7 +25,10 @@ from operando_xasxrd import (align_scans, threshold_onset, compare_with_table, d
 A = "NOTOS Analysing/"
 CELLS = {
     "NM":    dict(run="NNMO_0", tag="31NNMO_0", sr="SR0", xas="0",
-                  mpt=A + "XRD/NNMO_0/31NNMO_0_C01_Ix.mpt", txt=A + "XRD/NNMO_0/31NNMO_0_C01.txt"),
+                  mpt=A + "XRD/NNMO_0/31NNMO_0_C01_Ix.mpt", txt=A + "XRD/NNMO_0/31NNMO_0_C01.txt",
+                  # NM was not held at 4.5 V; its last charge scan (4.42 V, on the final rise) is
+                  # dropped so that all cells end at the last point before the top of charge.
+                  drop_last_charge=1),
     "LNM-2": dict(run="NLNMO_2", tag="32NLNMO_2", sr="SR2", xas="2",
                   mpt=A + "Echem/32NLNMO_2_C02.mpt", txt=A + "XRD/NLNMO_2/32NLNMO_2_C02.txt"),
     "LNM-3": dict(run="NLNMO_3", tag="13NLNMO_3", sr="SR3", xas="3",
@@ -62,10 +65,14 @@ def load_cell(root, c, x0=None):
     return echem, xas, xrd
 
 
-def first_charge(df, include_cv=False):
-    """First-charge scans; by default constant-current only (the 4.5 V CV-hold scan is left out)."""
+def first_charge(df, include_cv=False, drop_last=0):
+    """First-charge scans; by default constant-current only (the 4.5 V CV-hold scan is left out).
+
+    ``drop_last`` removes that many scans from the end of the charge (per-cell option).
+    """
     seg = SEGMENTS_CC_CV if include_cv else SEGMENTS_CC
-    return df[df["segment"].isin(seg) & (df["half_cycle"] == 0)]
+    ch = df[df["segment"].isin(seg) & (df["half_cycle"] == 0)].sort_values("t")
+    return ch.iloc[:len(ch) - drop_last] if drop_last else ch
 
 
 def branch_gap(ch, dis, col, n=100):
@@ -85,6 +92,7 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--table", help="optional CSV (cell,scan,x) with a hand-made x column to check")
     ap.add_argument("--n-boot", type=int, default=2000)
+    ap.add_argument("--keep-all", action="store_true", help="ignore per-cell drop_last_charge")
     ap.add_argument("--include-cv", action="store_true", help="also fit the scan(s) taken during the 4.5 V hold")
     ap.add_argument("--hysteresis", action="store_true", help="also plot discharge and report the Ni-edge gap")
     ap.add_argument("--threshold", type=float, default=0.1, help="eV per step for the SI threshold rule")
@@ -115,7 +123,7 @@ def main():
         ax[0, j].set_ylabel("V vs Na$^+$/Na")
         for i, (col, mod, label) in enumerate(obs, start=1):
             src = xas if mod == "XAS" else xrd
-            ch = first_charge(src, a.include_cv).dropna(subset=[col])
+            ch = first_charge(src, a.include_cv, 0 if a.keep_all else c.get("drop_last_charge", 0)).dropna(subset=[col])
             dis = src[src["segment"].str.startswith("discharge")].dropna(subset=[col])
             r = fit_hinge(ch["dx"].to_numpy(), ch[col].to_numpy(), n_boot=a.n_boot)
             v_b = float(np.interp(r.xb, ch["dx"], ch["V"]))
