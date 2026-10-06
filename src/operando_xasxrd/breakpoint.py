@@ -131,3 +131,21 @@ def fit_hinge(x, y, n_boot: int = 2000, seed: int = 0, ci: float = 0.95, **kw) -
     res.boot_xb = boot["xb"]
     res.xb_ci = (float(np.quantile(boot["xb"], q)), float(np.quantile(boot["xb"], 1 - q)))
     return res
+
+
+def threshold_onset(x, y, tol: float = 0.1, n_consec: int = 2):
+    """Step-threshold rule: first point after which ``n_consec`` successive steps satisfy |Δy| <= tol.
+
+    This is the empirical criterion used in the paper's SI (white-line change
+    within 0 ± 0.1 eV for two consecutive points). Returns (x_onset, index) or
+    (nan, None). Unlike :func:`fit_hinge` its result depends on the sampling step.
+    """
+    x = np.asarray(x, float)
+    y = np.asarray(y, float)
+    o = np.argsort(x)
+    x, y = x[o], y[o]
+    small = np.abs(np.diff(y)) <= tol
+    for i in range(len(small) - n_consec + 1):
+        if small[i:i + n_consec].all():
+            return float(x[i + 1]), int(o[i + 1])
+    return float("nan"), None

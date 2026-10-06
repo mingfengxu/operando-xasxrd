@@ -88,3 +88,14 @@ def test_edge_descriptors():
     mu = 1 / (1 + np.exp(-(e - 8345) / 1.5)) + 0.4 * np.exp(-0.5 * ((e - 8352.3) / 2.5) ** 2)
     assert edge_half(e, mu) == pytest.approx(8345, abs=0.15)
     assert white_line(e, mu) == pytest.approx(8352.6, abs=0.4)
+
+
+def test_threshold_onset_and_step_dependence():
+    from operando_xasxrd import threshold_onset
+    x = np.linspace(0, 0.5, 11)                       # step 0.05
+    y = np.where(x < 0.27, 10 * x, 2.7 + 1.5 * (x - 0.27))
+    xo, i = threshold_onset(x, y, tol=0.1)
+    assert xo == pytest.approx(0.35) and i == 7       # first point after which steps are small
+    x2 = np.linspace(0, 0.5, 6)                       # coarser sampling -> later onset
+    y2 = np.where(x2 < 0.27, 10 * x2, 2.7 + 1.5 * (x2 - 0.27))
+    assert np.isnan(threshold_onset(x2, y2, tol=0.1)[0])

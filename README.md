@@ -46,42 +46,78 @@ the raw time stamps and checks them.
 ```bash
 pip install -e ".[dev]"
 python examples/afm_li_p2.py --root ~/Work/operando_XRD_XANES --out results [--table xas_x.csv]
+#   --include-cv   also fit the scan taken during the 4.5 V hold (default: constant-current charge only)
+#   --hysteresis   also plot discharge and report the charge/discharge gap of the Ni edge
 ```
 
-| cell | Ni E½ break Δx (95 % CI) | V | a break Δx | c break Δx | Ni-edge slope after/before | Ni-edge hysteresis, mean (max) |
+Only the **constant-current part of the first charge** is fitted by default. LNM-2/3/4 were held
+at 4.5 V for 40 min, and one scan per cell fell into that hold. Including it moves the Ni-edge
+and *a* breaks by ≤ 0.004. It changes only LNM-2 *c* (0.34 → 0.41), because *c* drops sharply
+(11.23 → 11.06 Å) during the hold, the onset of interlayer collapse at 4.5 V.
+
+Compositions (Rietveld, SI Table S11) set the absolute x in the aligned tables; plots use Δx.
+
+| cell | composition | Ni per f.u. |
+|---|---|---|
+| NM | Na0.71Ni0.334Mn0.666O2 | 0.334 |
+| LNM-2 | Na0.745Li0.164Ni0.238Mn0.599O2 | 0.238 |
+| LNM-3 | Na0.748Li0.189Ni0.172Mn0.638O2 | 0.172 |
+| LNM-4 | Na0.75Li0.222Ni0.081Mn0.697O2 | 0.081 |
+
+**Break points, first charge (CC), Δx with 95 % bootstrap interval**
+
+| cell | Ni E½ | V | Ni white line | *a* | *c* | Ni E½ slope after/before |
 |---|---|---|---|---|---|---|
-| NM    | 0.35 (0.28–0.41) | 3.95 | 0.31 (0.29–0.34) | 0.27 | 0.35 | 0.14 eV (0.44) |
-| LNM-2 | 0.38 (0.35–0.40) | 4.10 | 0.28 (0.25–0.31) | 0.41 | 0.30 | 0.51 eV (0.75) |
-| LNM-3 | 0.29 (0.28–0.31) | 4.24 | 0.24 (0.21–0.26) | 0.26 | 0.05 | 1.27 eV (2.10) |
-| LNM-4 | 0.17 (0.16–0.17) | 3.62 | 0.15 (0.14–0.16) | 0.16 | 0.02 | 1.81 eV (3.18) |
+| NM    | 0.35 (0.28–0.41) | 3.95 | 0.24 (0.22–0.27) | 0.31 (0.29–0.34) | 0.27 (0.26–0.28) | 0.35 |
+| LNM-2 | 0.37 (0.34–0.39) | 4.09 | 0.24 (0.20–0.29) | 0.28 (0.25–0.30) | 0.34 (0.32–0.36) | 0.33 |
+| LNM-3 | 0.29 (0.27–0.31) | 4.24 | 0.25 (0.23–0.27) | 0.24 (0.21–0.26) | 0.25 (0.24–0.27) | 0.07 |
+| LNM-4 | 0.17 (0.16–0.17) | 3.62 | 0.15 (0.14–0.16) | 0.15 (0.14–0.16) | 0.16 (0.15–0.17) | 0.01 |
 
 ΔBIC > 20 for every fit, so a break is strongly preferred over a straight line.
 
-* In **LNM-3 and LNM-4** the Ni edge stops shifting (slope drops to 2–5 %) at the same Δx
-  where the in-plane parameter *a* stops contracting. About 0.2–0.35 more Na per formula unit
-  is then extracted without further Ni oxidation, which points to oxygen redox. Two independent
-  probes, XAS and XRD, agree within their bootstrap intervals.
-* In **NM and LNM-2** the edge keeps shifting after the break (30–35 % of the initial rate).
-  In NM the frozen *a*/*c* reflect the two-phase P2–O2 region (only the P2 phase is refined),
-  not the end of Ni redox. The two modalities therefore disagree there for a structural
-  reason, and the comparison makes that visible.
-* The charge/discharge gap of the Ni edge at equal Δx grows monotonically with Li content
-  (0.14 → 1.81 eV). On discharge, Ni is reduced only after a large part of the Na is
-  re-inserted, which is consistent with the voltage hysteresis of the Li-rich compositions.
+* The break moves to smaller Δx as the Ni content falls (NM/LNM-2 → LNM-3 → LNM-4).
+* In **LNM-3 and LNM-4** the Ni edge stops shifting (slope 1–7 % of the initial value) at the
+  same Δx where *a* stops contracting. About 0.2–0.3 more Na per formula unit is then extracted
+  without further Ni oxidation, which points to oxygen redox. Two independent probes, XAS and
+  XRD, agree within their bootstrap intervals.
+* In **NM and LNM-2** the edge keeps shifting after the break (about a third of the initial
+  rate). In NM the frozen *a*/*c* reflect the two-phase P2–O2 region (only the P2 phase is
+  refined), not the end of Ni redox.
 
-**Data checks found by the alignment** (against the hand-made x table used for the paper figure):
+**Comparison with the criterion used in the paper (SI Fig. S18).** The paper counts Ni redox as
+finished once the white-line change stays within ±0.1 eV for two consecutive points.
+`threshold_onset` implements that rule. On the same automatically extracted white line and the
+same Δx axis:
 
-* The x values differ from the potentiostat by a constant per cell (initial-x convention).
-* The last XAS point of LNM-3 and of LNM-4 was recorded on **discharge** (3.75 / 3.86 V),
-  not at the end of charge.
-* The last LNM-2 point lies in the 4.5 V CV hold, not on the CC branch.
+| cell | SI threshold rule | hinge, white line | hinge, E½ |
+|---|---|---|---|
+| NM    | 0.38 | 0.24 | 0.35 |
+| LNM-2 | 0.52 | 0.24 | 0.37 |
+| LNM-3 | 0.37 | 0.25 | 0.29 |
+| LNM-4 | 0.24 | 0.15 | 0.17 |
+
+Both methods give the same ordering, but the threshold rule comes out later. It returns the first
+point already inside the band, not the intersection of the two regimes. Its tolerance is per
+step, so it implicitly demands a slope below 0.1 eV / (step in Δx), about 2.4 eV per unit Δx here.
+The answer therefore changes with the scan interval, and a slow residual drift, as in LNM-2,
+postpones it a lot. The hinge fit does not depend on the step and comes with an uncertainty.
+
+**Data checks found by the alignment** (against the hand-made x table behind Fig. S18):
+
+* For LNM-3/4 the table uses the refined Na content as x0, so it matches the potentiostat to
+  within 0.01, except for the first one or two points. For NM it is offset by 0.07 and for LNM-2 by 0.02.
+* The last point of LNM-3 and of LNM-4 in that table, plotted as the high-voltage end of charge,
+  was recorded about 27 min **into the discharge** (3.75 / 3.86 V). The charge ended, the 40 min
+  hold and a 5 min rest followed, and the next scan came after the current had reversed. In
+  Fig. S18 these are the last points (−0.05 and −0.17 eV). The −0.17 eV point, the only one
+  clearly outside the ±0.1 eV band, is the Ni edge starting to come back on discharge.
 * ATHENA's automatic white-line pick failed for the first two NM spectra (8346.5 eV instead
   of ≈8351.3 eV). The descriptor in `xanes.py` gives 8351.35 eV.
 
 ## Limitations
 
-* Δx is Na extracted according to the potentiostat. Absolute x needs the initial composition
-  (`x0` in `state_at`).
+* Δx is Na extracted according to the potentiostat (it includes any side-reaction current).
+  Absolute x uses the refined initial Na content.
 * The reference spectra (NiO, LiNiO₂) in the four ATHENA projects are not on a common energy
   scale (E½ of NiO differs by up to 1 eV between files). Only shifts within one cell are
   used, not absolute oxidation states.
